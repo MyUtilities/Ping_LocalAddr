@@ -1,5 +1,13 @@
 #include "Network_Check.h"
 
+#define ANSI_COLOR_RED     "\x1b[31m"
+#define ANSI_COLOR_GREEN   "\x1b[32m"
+#define ANSI_COLOR_YELLOW  "\x1b[33m"
+#define ANSI_COLOR_BLUE    "\x1b[34m"
+#define ANSI_COLOR_MAGENTA "\x1b[35m"
+#define ANSI_COLOR_CYAN    "\x1b[36m"
+#define ANSI_COLOR_RESET   "\x1b[0m"
+
 //
 // This class manages socket timeouts by applying the concept of a deadline.
 // Some asynchronous operations are given deadlines by which they must complete.
@@ -471,4 +479,44 @@ void rvs_subutil::available_ipaddr_check()
 	{
 		printf("%s \n", m_available_ipaddr_list[i].c_str());
 	}
+}
+
+void rvs_subutil::request_http(std::string ipaddr)
+{
+	std::wcout.imbue(std::locale(""));
+
+	AsioHttp::Client client;
+	client.Init(ipaddr, CP_UTF8);
+
+	//std::wcout << client.Request("//cgi-bin/ensemble.cgi").strData << std::endl;
+
+	printf(ANSI_COLOR_YELLOW "Checking [%s] ... " ANSI_COLOR_RESET,ipaddr.c_str());
+	std::wstring req_bufw = client.Request("//cgi-bin/ensemble.cgi").strData;
+	std::string server_reply;
+	server_reply.assign(req_bufw.begin(), req_bufw.end());
+	//printf(" server reply \n");	
+	if (server_reply.length() >= 1)
+	{
+		printf("\nReply from server\n%s\n", server_reply.c_str());
+		printf(ANSI_COLOR_GREEN "Find Ensemble success![%s] \n" ANSI_COLOR_RESET, ipaddr.c_str());
+	}
+	else
+	{
+		printf(ANSI_COLOR_YELLOW " This is not ensemble \n" ANSI_COLOR_RESET);
+	}
+	
+}
+
+std::vector<std::string> rvs_subutil::Find_ensemble()
+{
+	std::vector<std::string> ensemble_ip_addrs;
+	available_ipaddr_check();
+	for (int i = 0; i < m_available_ipaddr_list.size(); i++)
+	{
+		request_http(m_available_ipaddr_list[i]);
+	}
+	
+	
+	return ensemble_ip_addrs;
+
 }

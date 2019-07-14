@@ -13,6 +13,7 @@
 #include <boost/thread.hpp>
 #include <iostream>
 
+#include "HttpClient.h"
 using boost::asio::deadline_timer;
 using boost::asio::ip::tcp;
 
@@ -42,7 +43,9 @@ class rvs_subutil {
 public:
 	rvs_subutil() {}
 	~rvs_subutil() {}
-	void available_ipaddr_check();
+	std::vector<std::string> Find_ensemble();
 private:
 	std::vector<std::string> m_available_ipaddr_list;
+	void available_ipaddr_check();
+	void request_http(std::string ipaddr);
 };
